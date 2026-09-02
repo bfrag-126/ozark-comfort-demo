@@ -19,6 +19,13 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  // Some API keys are tied to a specific Console workspace (an "identity-linked"
+  // key) rather than being workspace-agnostic. When that's the case, Anthropic
+  // requires the request to say which workspace it's acting in via this header.
+  // Set ANTHROPIC_WORKSPACE_ID in Vercel only if your key needs it -- a plain
+  // org-wide key works fine without it, and this header is simply omitted then.
+  const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
+
   const { prompt } = req.body || {};
   if (!prompt || typeof prompt !== 'string') {
     res.status(400).json({ error: 'Missing "prompt" in request body.' });
@@ -26,13 +33,18 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const headers = {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    };
+    if (workspaceId) {
+      headers['anthropic-workspace-id'] = workspaceId;
+    }
+
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
+      headers,
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 1024,
