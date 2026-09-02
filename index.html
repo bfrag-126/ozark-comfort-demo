@@ -223,5 +223,12 @@ function App() {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
 </script>
+<script>
+  // Babel-standalone's automatic DOMContentLoaded-based script transform
+  // doesn't reliably fire once this page is served over a real host (it
+  // only ran when manually triggered from devtools during testing) -- so
+  // trigger it explicitly instead of relying on its auto-run behavior.
+  Babel.transformScriptTags();
+</script>
 </body>
 </html>
