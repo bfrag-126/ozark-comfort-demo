@@ -3,75 +3,198 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Ozark Comfort — Operations Dashboard</title>
+<title>Ozark Comfort Dispatch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --navy: #1f2937;
-    --blue: #2c5f8a;
-    --orange: #d9782d;
-    --bg: #f4f6f8;
-    --card: #ffffff;
-    --border: #e2e5e9;
-    --text: #1f2937;
-    --muted: #6b7280;
+    --bg: #EEF1F3;
+    --surface: #FFFFFF;
+    --surface-2: #F6F8F9;
+    --ink: #1B232B;
+    --muted: #5B6570;
+    --line: #DCE1E5;
+    --accent: #B65A2A;
+    --accent-ink: #FFFFFF;
+    --good: #2E7D5B;
+    --good-bg: #E4F3EC;
+    --info: #3A6E97;
+    --info-bg: #E7F0F7;
+    --warn: #A9781F;
+    --warn-bg: #FBF1DC;
+    --warn-strong: #9C5F1E;
+    --tech-marcus: #3D7A72; --tech-marcus-bg: #E4F1EF;
+    --tech-jared:  #7A4B6E; --tech-jared-bg:  #F2E9F0;
+    --tech-tyler:  #6B7A3D; --tech-tyler-bg:  #EEF1E1;
+    --shadow: 0 1px 2px rgba(27,35,43,0.06), 0 1px 1px rgba(27,35,43,0.04);
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181C; --surface: #1C2227; --surface-2: #20262B;
+      --ink: #E7EAEC; --muted: #8B949C; --line: #2A3136;
+      --accent: #CC6B33; --accent-ink: #FFFFFF;
+      --good: #4FB98B; --good-bg: #163326;
+      --info: #6FA8D6; --info-bg: #17293A;
+      --warn: #E0B84B; --warn-bg: #3A2E12; --warn-strong: #F2C878;
+      --tech-marcus: #5FA89E; --tech-marcus-bg: #163430;
+      --tech-jared:  #C990BC; --tech-jared-bg:  #33202E;
+      --tech-tyler:  #A7B876; --tech-tyler-bg:  #262B15;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+  }
+
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  button { font-family: inherit; }
   #root { min-height: 100vh; }
-  .center { display:flex; align-items:center; justify-content:center; height:100vh; color: var(--muted); font-size:16px; }
-  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
-  .header { display:flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; border-bottom: 2px solid var(--blue); padding-bottom: 20px; margin-bottom: 28px; }
-  .h1 { margin:0; font-size: 26px; font-weight:700; color: var(--navy); }
-  .subtitle { color: var(--muted); font-size: 14px; margin-top: 4px; }
-  .stat-bar { display:flex; gap: 24px; }
-  .stat { text-align:center; }
-  .stat-value { font-size: 22px; font-weight:700; color: var(--blue); }
-  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .columns { display:grid; grid-template-columns: 1.3fr 1fr; gap: 28px; }
-  @media (max-width: 800px) { .columns { grid-template-columns: 1fr; } }
-  .section-title { font-size: 15px; font-weight:700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--navy); margin: 0 0 14px; }
+  .center { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--muted); font-size: 15px; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 28px 24px 56px; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 3px solid var(--accent); }
+  .brand-eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 2px; }
+  .brand-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: clamp(28px, 4.5vw, 40px); letter-spacing: 0.01em; text-transform: uppercase; line-height: 1; margin: 0; }
+  .brand-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .stat-strip { display: flex; gap: 24px; flex-wrap: wrap; }
+  .stat { text-align: right; min-width: 74px; }
+  .stat-value { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 24px; color: var(--ink); line-height: 1; }
+  .stat-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .topbar-left { font-size: 14px; color: var(--muted); }
+  .topbar-left strong { color: var(--ink); text-transform: capitalize; }
+
+  .btn { font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font-family: inherit; }
+  .btn:hover { border-color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.6; cursor: default; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  .preview-note { display: flex; align-items: flex-start; gap: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 24px; }
+  .preview-note strong { color: var(--ink); font-weight: 600; }
+  .preview-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; margin-top: 5px; }
+
+  .columns { display: grid; grid-template-columns: 1.5fr 1fr; gap: 28px; align-items: start; margin-bottom: 28px; }
+  @media (max-width: 900px) { .columns { grid-template-columns: 1fr; } }
+  .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .section-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 19px; letter-spacing: 0.03em; text-transform: uppercase; margin: 0; }
+  .section-count { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--muted); }
+
   .date-group { margin-bottom: 20px; }
-  .date-label { font-size: 13px; font-weight:600; color: var(--blue); margin-bottom: 8px; }
-  .tech-group { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
-  .tech-name { font-weight:600; font-size: 13px; color: var(--navy); margin-bottom: 6px; }
-  .job-row { padding: 6px 0; border-top: 1px solid var(--border); }
-  .job-row:first-of-type { border-top: none; padding-top: 0; }
-  .job-main { display:flex; justify-content: space-between; font-size: 14px; }
-  .job-type { color: var(--text); font-weight:500; }
-  .customer-name { color: var(--muted); }
-  .job-notes { font-size: 12.5px; color: var(--muted); margin-top: 2px; font-style: italic; }
-  .quote-row { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
-  .quote-age { font-size: 12px; font-weight:600; color: var(--orange); }
-  .empty { color: var(--muted); font-size: 14px; font-style: italic; }
+  .date-group:last-child { margin-bottom: 0; }
+  .date-label { font-size: 12.5px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .tech-block { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 10px; overflow: hidden; }
+  .tech-block:last-child { margin-bottom: 0; }
+  .tech-bar { display: flex; align-items: center; gap: 8px; padding: 9px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .tech-initial { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; flex: none; }
+  .tech-name { font-size: 13px; font-weight: 600; }
+  .job-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); align-items: center; }
+  .job-row:first-of-type { border-top: none; }
+  .job-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .job-type { font-size: 14px; font-weight: 500; }
+  .job-customer { font-size: 12.5px; color: var(--muted); }
+  .job-note { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 2px; }
+  .empty { color: var(--muted); font-size: 13.5px; font-style: italic; padding: 20px 4px; }
+
+  .quote-card { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 10px; }
+  .quote-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .quote-customer { font-size: 14px; font-weight: 600; }
+  .quote-age { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; color: var(--warn); white-space: nowrap; }
+  .quote-type { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  .inbox-list { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); overflow: hidden; }
+  .inbox-item { padding: 12px 14px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-start; }
+  .inbox-item:first-child { border-top: none; }
+  .inbox-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--info); margin-top: 6px; flex: none; }
+  .inbox-item[data-unread="false"] .inbox-dot { background: transparent; }
+  .inbox-body { min-width: 0; flex: 1; }
+  .inbox-top { display: flex; justify-content: space-between; gap: 8px; }
+  .inbox-sender { font-size: 13.5px; font-weight: 600; }
+  .inbox-item[data-unread="false"] .inbox-sender { font-weight: 500; color: var(--muted); }
+  .inbox-flagtag { font-size: 10.5px; font-weight: 600; color: var(--warn-strong); background: var(--warn-bg); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+  .inbox-subject { font-size: 13px; margin-top: 2px; }
+  .inbox-snippet { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  .agent-note { margin-top: 10px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
+  .agent-note-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 6px; }
+  .inline-action-row { margin-top: 8px; }
+
+  .review-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 10px; }
+  .review-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .review-stars { font-size: 13px; letter-spacing: 1px; }
+  .review-stars[data-rating="5"] { color: var(--good); }
+  .review-stars[data-rating="2"] { color: var(--warn-strong); }
+  .review-author { font-size: 13px; font-weight: 600; }
+  .review-text { font-size: 13px; color: var(--muted); margin-top: 4px; font-style: italic; }
+  .review-source { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+
+  .financials-section { margin-top: 28px; }
+  .attrib-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12.5px; }
+  .attrib-label { width: 116px; flex: none; color: var(--muted); }
+  .attrib-bar-track { display: block; flex: 1; height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .attrib-bar-fill { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+  .attrib-count { width: 34px; flex: none; text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .mini-stat-row { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+  .mini-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; box-shadow: var(--shadow); }
+  .mini-stat-value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; }
+  .mini-stat-label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+  .chat-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; margin-top: 28px; }
+  .chat-head { padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); display: flex; align-items: center; gap: 8px; }
+  .chat-head-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+  .chat-head-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .chat-quick { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 16px 0; }
+  .chip { font-size: 12.5px; font-weight: 500; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; font-family: inherit; }
+  .chip:hover { border-color: var(--accent); color: var(--ink); }
+  .chat-thread { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 50px; max-height: 360px; overflow-y: auto; }
+  .chat-msg { max-width: 84%; padding: 9px 12px; border-radius: 10px; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; }
+  .chat-msg.user { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 3px; }
+  .chat-msg.assistant { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--line); border-bottom-left-radius: 3px; }
+  .chat-empty-hint { font-size: 12.5px; color: var(--muted); font-style: italic; padding: 4px 2px 10px; }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+  .chat-input-row input { flex: 1; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 13.5px; font-family: inherit; }
+  .chat-input-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .roadmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  @media (max-width: 760px) { .roadmap-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .roadmap-grid { grid-template-columns: 1fr; } }
+  .roadmap-card { border: 1px dashed var(--line); border-radius: 8px; padding: 14px; background: var(--surface-2); }
+  .roadmap-icon { font-size: 18px; margin-bottom: 6px; }
+  .roadmap-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .roadmap-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .brand-mark { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11.5px; letter-spacing: 0.02em; margin-top: 10px; }
+  .brand-mark svg { width: 16px; height: 16px; opacity: 0.8; flex: none; }
 
   .login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 32px 28px; box-shadow: 0 4px 18px rgba(31,41,55,0.08); box-sizing: border-box; }
-  .login-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); text-align: center; margin: 0 0 6px; }
-  .login-title { font-size: 22px; font-weight: 700; color: var(--navy); text-align: center; margin: 0 0 4px; }
+  .login-card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 28px rgba(27,35,43,0.12); padding: 32px 30px; }
+  .login-eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; text-align: center; }
+  .login-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; text-transform: uppercase; text-align: center; margin: 0 0 6px; }
   .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 22px; }
   .login-field { margin-bottom: 16px; }
-  .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
-  .login-field input { width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px; font-family: inherit; box-sizing: border-box; }
-  .login-field input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
-  .login-error { font-size: 13px; color: #b3261e; background: #fdecea; border: 1px solid #f4c7c3; border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
-  .login-btn { width: 100%; padding: 11px; border-radius: 6px; border: none; background: var(--blue); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .login-btn:hover { background: var(--navy); }
-  .topbar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1100px; margin: 0 auto; padding: 16px 24px 0; font-size: 13px; color: var(--muted); }
-  .logout-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 12.5px; color: var(--text); cursor: pointer; font-family: inherit; }
-  .logout-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .login-field input { width: 100%; padding: 10px 12px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 14px; font-family: inherit; box-sizing: border-box; }
+  .login-field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .login-error { font-size: 13px; color: var(--warn-strong); background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 7px; padding: 9px 11px; margin-bottom: 14px; }
+  .login-btn { width: 100%; padding: 11px; border-radius: 7px; border: none; background: var(--accent); color: var(--accent-ink); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .login-btn:hover { filter: brightness(1.05); }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/plain" id="app-source">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const SUPABASE_URL = 'https://stcedpfozkvanmiwkdlb.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_WP6YLXEf6TOyaYqPJMGgsg_V1Iv_PYu';
@@ -111,10 +234,88 @@ function groupByTechnician(jobs) {
   return Object.entries(map);
 }
 
-// Demo-only credential check, done client-side since this is a static
-// site with no backend yet. Real per-role security (Supabase Auth + RLS
-// enforced at the database level) is the planned next step before any
-// real client's data goes through a page like this one.
+const TECH_META = {
+  'Marcus Whedbee': { initial: 'MW', fg: 'var(--tech-marcus)', bg: 'var(--tech-marcus-bg)' },
+  'Jared Combs':    { initial: 'JC', fg: 'var(--tech-jared)',  bg: 'var(--tech-jared-bg)' },
+  'Tyler Rourke':   { initial: 'TR', fg: 'var(--tech-tyler)',  bg: 'var(--tech-tyler-bg)' },
+};
+function techMeta(name) {
+  return TECH_META[name] || { initial: (name || '?').slice(0, 2).toUpperCase(), fg: 'var(--muted)', bg: 'var(--surface-2)' };
+}
+
+// ---------------------------------------------------------------------------
+// Illustrative data. Ozark Comfort's real Supabase database only models
+// customers and jobs -- it has no inbox or review system yet, so these two
+// sections are mocked, same as the earlier Claude Artifact version of this
+// demo was honest about. Everything else on the page (schedule, quotes,
+// customer count, referral-source mix) is real data from Supabase, and the
+// "Suggest Scheduling" / "Draft a Response" / chat / digest features below
+// call a real Claude model through this site's own /api/agent endpoint --
+// only the inbox messages and reviews themselves are illustrative.
+// ---------------------------------------------------------------------------
+const COMPANY_INBOX = [
+  { sender: 'Facebook Messenger', subject: 'Do you install mini-splits?', snippet: "Hi, I saw your page — do you guys install ductless mini-split systems? Looking to get one in my garage.", unread: true, flag: 'New inquiry', needsScheduling: true, town: 'Ashland', jobType: 'Mini-split install' },
+  { sender: 'contact-form@ozarkcomfortmo.com', subject: 'Website inquiry — AC not cooling', snippet: 'Submitted via website form: "AC is running but blowing warm air, need someone this week if possible."', unread: true, flag: 'New inquiry', needsScheduling: true, town: 'Columbia', jobType: 'AC repair (urgent)' },
+  { sender: 'Deb (office)', subject: 'Reminder — parts order', snippet: 'Capacitor order for the Kessling job should be in by Wednesday, FYI.', unread: false, flag: '' },
+  { sender: 'Google Reviews', subject: 'You have a new 5-star review', snippet: '"Marcus was great, fixed our AC same day. Highly recommend Ozark Comfort!"', unread: false, flag: '' },
+  { sender: 'Sherry Talbott', subject: 'Can we reschedule Thursday?', snippet: 'Something came up — any chance we could push the duct cleaning to Friday instead?', unread: true, flag: 'Needs reply' },
+];
+
+const REVIEWS = [
+  { rating: 5, author: 'Karen M.', source: 'Google', text: 'Marcus was great, fixed our AC same day. Highly recommend Ozark Comfort!' },
+  { rating: 2, author: 'Todd R.', source: 'Google', text: "Appointment window was 8am-12pm, tech didn't show until almost 2. Work itself was fine once he got here." },
+];
+
+const ROADMAP_ITEMS = [
+  { icon: '📞', title: 'Missed-Call Text-Back', desc: "Auto-texts a caller who couldn't be reached, so a busy day never means a lost lead." },
+  { icon: '🔧', title: 'Seasonal Maintenance Reminders', desc: 'Reaches past customers when it’s time for a spring AC or fall furnace check — recurring revenue nobody has to chase.' },
+  { icon: '🌙', title: 'After-Hours Inquiry Capture', desc: 'Instant acknowledgment plus urgency triage on anything that comes in outside business hours.' },
+  { icon: '💳', title: 'Invoice Payment Reminders', desc: 'Gentle automatic nudges on anything past due, so nobody has to make the awkward call.' },
+  { icon: '🗒️', title: 'Daily Rep Morning Briefing', desc: "Each tech's day auto-summarized with customer history and notes before they head out." },
+  { icon: '🤝', title: 'Referral Ask Automation', desc: 'A friendly "how did we do, would you refer us" follow-up after every completed job.' },
+];
+
+const BRAND_MARK_SVG = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <path d="M12 3c-1.7 0-3.3.5-4.6 1.4"/>
+    <path d="M5 7.5C3.7 9.1 3 11 3 13c0 2 .5 3.8 1.4 5.3"/>
+    <path d="M9 4.6C10 4.2 11 4 12 4c4.4 0 8 3.6 8 8 0 1.6-.3 3.1-.9 4.4"/>
+    <path d="M7 6.7C5.5 8.3 4.6 10.5 4.6 13c0 1.7.4 3.2 1.1 4.6"/>
+    <path d="M12 6c3.3 0 6 2.7 6 6 0 1.2-.2 2.3-.6 3.3"/>
+    <path d="M8.3 8.2C7.3 9.5 6.7 11.2 6.7 13c0 1.3.3 2.5.8 3.6"/>
+    <path d="M12 8c2.2 0 4 1.8 4 4 0 .8-.1 1.5-.4 2.2"/>
+    <path d="M9.7 10c-.5.8-.8 1.9-.8 3 0 1 .2 1.9.6 2.7"/>
+    <path d="M12 21c-1-1.4-1.6-3.1-1.6-5"/>
+  </svg>
+);
+function BrandMark() {
+  return (
+    <div className="brand-mark">
+      {BRAND_MARK_SVG}
+      <span>Built by Second Shift &mdash; bespoke to Ozark Comfort</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Real AI calls. This posts to this site's own /api/agent serverless
+// function, which holds the actual Anthropic API key server-side (never in
+// the browser) and calls Claude for real -- these are genuine model
+// responses, not canned text.
+// ---------------------------------------------------------------------------
+async function callAgent(prompt) {
+  const res = await fetch('/api/agent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || `Request failed (${res.status})`);
+  }
+  return data.text || '';
+}
+
 const ACCOUNTS = { rep: 'rep', office: 'office', admin: 'admin' };
 
 function Login({ onLogin }) {
@@ -138,7 +339,7 @@ function Login({ onLogin }) {
       <div className="login-card">
         <p className="login-eyebrow">HVAC &middot; Mid-Missouri</p>
         <h1 className="login-title">Ozark Comfort</h1>
-        <p className="login-sub">Sign in to the operations dashboard</p>
+        <p className="login-sub">Sign in to the dispatch dashboard</p>
         {error && <div className="login-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="login-field">
@@ -156,6 +357,160 @@ function Login({ onLogin }) {
   );
 }
 
+function AgentNote({ label, busyText, text, error }) {
+  return (
+    <div className="agent-note">
+      <div className="agent-note-label">{label}</div>
+      {error ? `Couldn't get an answer just now — ${error}. Feel free to try again.` : (text || busyText)}
+    </div>
+  );
+}
+
+function SchedulingSuggestion({ item, techLoadText }) {
+  const [state, setState] = useState({ status: 'idle', text: '', error: '' });
+
+  async function run() {
+    setState({ status: 'loading', text: '', error: '' });
+    const prompt = `You are the scheduling assistant for Ozark Comfort Heating & Cooling, an HVAC company with three technicians: Marcus Whedbee, Jared Combs, and Tyler Rourke. A new inquiry needs to be slotted in. Suggest ONE specific technician and a specific day/time this week, and briefly explain your reasoning (workload balance and general service fit) in 3-4 sentences, confident and concrete, the way a sharp dispatcher would explain their call. Do not hedge with "it depends" — commit to a recommendation.\n\nCurrent scheduled workload (jobs not yet completed):\n${techLoadText}\n\nNew inquiry:\nCustomer request: "${item.snippet}"\nLikely job type: ${item.jobType}\nCustomer area: ${item.town}\n\nGive your recommendation.`;
+    try {
+      const text = await callAgent(prompt);
+      setState({ status: 'done', text, error: '' });
+    } catch (e) {
+      setState({ status: 'done', text: '', error: e.message });
+    }
+  }
+
+  return (
+    <div className="inline-action-row">
+      <button className="btn btn-sm" onClick={run} disabled={state.status === 'loading'}>
+        {state.status === 'loading' ? 'Thinking…' : state.status === 'done' && !state.error ? 'Suggest Again' : 'Suggest Scheduling'}
+      </button>
+      {state.status !== 'idle' && (
+        <AgentNote label="Scheduling Suggestion" busyText="Working on it…" text={state.text} error={state.error} />
+      )}
+    </div>
+  );
+}
+
+function ReviewResponseDraft({ review }) {
+  const [state, setState] = useState({ status: 'idle', text: '', error: '' });
+
+  async function run() {
+    setState({ status: 'loading', text: '', error: '' });
+    const prompt = `You are drafting a public reply, as the owner of Ozark Comfort Heating & Cooling (a family-owned HVAC company), to a ${review.rating}-star ${review.source} review from ${review.author}: "${review.text}". Write a short, genuine-sounding public response (3-4 sentences) — warm and appreciative for a positive review, or calm, accountable, and non-defensive for a negative one (acknowledge the specific issue, no excuses, invite them to reach out directly). Do not sound like corporate PR.`;
+    try {
+      const text = await callAgent(prompt);
+      setState({ status: 'done', text, error: '' });
+    } catch (e) {
+      setState({ status: 'done', text: '', error: e.message });
+    }
+  }
+
+  return (
+    <div className="inline-action-row">
+      <button className="btn btn-sm" onClick={run} disabled={state.status === 'loading'}>
+        {state.status === 'loading' ? 'Thinking…' : state.status === 'done' && !state.error ? 'Redraft' : 'Draft a Response'}
+      </button>
+      {state.status !== 'idle' && (
+        <AgentNote label="Draft Response" busyText="Working on it…" text={state.text} error={state.error} />
+      )}
+    </div>
+  );
+}
+
+function DigestGenerator({ contextText }) {
+  const [state, setState] = useState({ status: 'idle', text: '', error: '' });
+
+  async function run() {
+    setState({ status: 'loading', text: '', error: '' });
+    const prompt = `Write a short, warm, plain-English Monday-morning "here's what happened" weekly digest for the owner of Ozark Comfort Heating & Cooling, based ONLY on the data below. Cover what's scheduled, the open quote pipeline and which ones need attention most, where recent customers are coming from, and anything notable in the inbox. Keep it to a tight, scannable paragraph or two — this should read like a trusted assistant caught the owner up over coffee, not a report.\n\n${contextText}`;
+    try {
+      const text = await callAgent(prompt);
+      setState({ status: 'done', text, error: '' });
+    } catch (e) {
+      setState({ status: 'done', text: '', error: e.message });
+    }
+  }
+
+  return (
+    <div>
+      <button className="btn btn-primary btn-sm" onClick={run} disabled={state.status === 'loading'}>
+        {state.status === 'loading' ? 'Generating…' : "Generate This Week's Digest"}
+      </button>
+      {state.status !== 'idle' && (
+        <AgentNote label="This Week at Ozark Comfort" busyText="Working on it…" text={state.text} error={state.error} />
+      )}
+    </div>
+  );
+}
+
+function ChatPanel({ contextFn, questions }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const threadRef = useRef(null);
+
+  useEffect(() => {
+    if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
+  }, [messages]);
+
+  async function ask(question) {
+    if (!question.trim() || busy) return;
+    setBusy(true);
+    setMessages((m) => [...m, { role: 'user', text: question }, { role: 'assistant', text: '', pending: true }]);
+    const prompt = `You are the assistant built into Ozark Comfort Heating & Cooling's dispatch tool. Answer helpfully and thoroughly, not tersely — give real, complete answers. Stay strictly grounded in the data below; if something isn't in it, say you don't have that information rather than guessing. If asked to draft a reply, write a short, friendly, professional draft the person can review and send themselves — never claim to have sent anything. If financial or attribution data is included below, the current login is authorized to see it.\n\n${contextFn()}\n\nQuestion: ${question}`;
+    try {
+      const text = await callAgent(prompt);
+      setMessages((m) => {
+        const next = m.slice(0, -1);
+        next.push({ role: 'assistant', text });
+        return next;
+      });
+    } catch (e) {
+      setMessages((m) => {
+        const next = m.slice(0, -1);
+        next.push({ role: 'assistant', text: `Couldn't get an answer just now — ${e.message}. Feel free to try again.` });
+        return next;
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleSend() {
+    const val = input;
+    setInput('');
+    ask(val);
+  }
+
+  return (
+    <div className="chat-panel">
+      <div className="chat-head"><span className="chat-head-dot"></span><span className="chat-head-title">Ask the Assistant</span></div>
+      <div className="chat-quick">
+        {questions.map((q, i) => (
+          <button key={i} className="chip" onClick={() => ask(q)} disabled={busy}>{q}</button>
+        ))}
+      </div>
+      <div className="chat-thread" ref={threadRef}>
+        {messages.length === 0 && <div className="chat-empty-hint">Try a quick question above, or type your own below — real answers from Claude, grounded in this dashboard's data.</div>}
+        {messages.map((m, i) => (
+          <div key={i} className={`chat-msg ${m.role}`}>{m.pending ? 'Thinking…' : m.text}</div>
+        ))}
+      </div>
+      <div className="chat-input-row">
+        <input
+          type="text"
+          placeholder="Ask about the schedule, quotes, or inbox…"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+        />
+        <button className="btn btn-primary" onClick={handleSend} disabled={busy}>Send</button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [session, setSession] = useState(() => {
     try { return sessionStorage.getItem('ozark_role') || null; } catch (e) { return null; }
@@ -163,6 +518,8 @@ function App() {
   const [scheduled, setScheduled] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [customerCount, setCustomerCount] = useState(null);
+  const [completedCount, setCompletedCount] = useState(null);
+  const [referralCounts, setReferralCounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -186,15 +543,39 @@ function App() {
           .from('customers')
           .select('*', { count: 'exact', head: true });
 
-        const [schedRes, quoteRes, custRes] = await Promise.all([schedReq, quoteReq, custReq]);
+        const completedReq = supabase
+          .from('jobs')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'completed');
+
+        const referralReq = supabase
+          .from('customers')
+          .select('referral_source');
+
+        const [schedRes, quoteRes, custRes, completedRes, referralRes] = await Promise.all([
+          schedReq, quoteReq, custReq, completedReq, referralReq,
+        ]);
 
         if (schedRes.error) throw schedRes.error;
         if (quoteRes.error) throw quoteRes.error;
         if (custRes.error) throw custRes.error;
+        if (completedRes.error) throw completedRes.error;
+        if (referralRes.error) throw referralRes.error;
 
         setScheduled(schedRes.data || []);
         setQuotes(quoteRes.data || []);
         setCustomerCount(custRes.count);
+        setCompletedCount(completedRes.count);
+
+        const tally = {};
+        (referralRes.data || []).forEach((row) => {
+          const key = row.referral_source || 'Unknown';
+          tally[key] = (tally[key] || 0) + 1;
+        });
+        const counts = Object.entries(tally)
+          .map(([label, count]) => ({ label, count }))
+          .sort((a, b) => b.count - a.count);
+        setReferralCounts(counts);
       } catch (e) {
         setError(e.message || String(e));
       } finally {
@@ -232,19 +613,47 @@ function App() {
   });
   const dateKeys = Object.keys(byDate).sort();
 
+  const techLoad = {};
+  scheduled.forEach((j) => { techLoad[j.technician] = (techLoad[j.technician] || 0) + 1; });
+  const techLoadText = Object.keys(techLoad).length
+    ? Object.entries(techLoad).map(([t, n]) => `${t}: ${n} job(s) already scheduled`).join('\n')
+    : 'No technicians currently have scheduled jobs.';
+
+  const scheduleText = scheduled.map((j) => `- ${formatDateLabel(j.job_date)}: ${j.job_type} for ${j.customers ? j.customers.name : 'unknown customer'} with ${j.technician}${j.notes ? ' — ' + j.notes : ''}`).join('\n') || '(nothing currently scheduled)';
+  const quotesText = quotes.map((q) => `- ${q.customers ? q.customers.name : 'unknown customer'}: ${q.job_type}, ${daysAgoLabel(q.job_date)}${q.notes ? ' — ' + q.notes : ''}`).join('\n') || '(no open quotes)';
+  const inboxText = COMPANY_INBOX.map((m) => `- From ${m.sender}${m.unread ? ' (unread)' : ''}: "${m.subject}" — ${m.snippet}`).join('\n');
+  const referralText = referralCounts.map((r) => `- ${r.label}: ${r.count}`).join('\n') || '(no referral data yet)';
+
+  function buildContext() {
+    let text = `SCHEDULED JOBS (not yet completed):\n${scheduleText}\n\nOPEN QUOTES (need follow-up, oldest first matters most):\n${quotesText}\n\nCOMPANY INBOX (illustrative sample inbox):\n${inboxText}`;
+    if (session === 'admin') {
+      text += `\n\nADMIN-ONLY DATA (this login is authorized to see it — would not be shown to an Office or Rep login):\nCompleted jobs so far: ${completedCount}\nCurrently scheduled jobs: ${scheduled.length}\nOpen quotes awaiting follow-up: ${quotes.length}\nTotal active customers: ${customerCount}\nWhere customers came from:\n${referralText}`;
+    }
+    return text;
+  }
+
+  const quickQuestions = [
+    "What's on today's schedule?",
+    'Which quotes need follow-up most urgently?',
+    'Draft a reply to the oldest open quote',
+    'Summarize the company inbox',
+  ];
+  if (session === 'admin') quickQuestions.push('Where are most of our customers coming from?');
+
   return (
-    <>
+    <div className="page">
       <div className="topbar">
-        Signed in as <strong style={{ color: 'var(--navy)' }}>{session}</strong>
-        <button className="logout-btn" onClick={handleLogout}>Log Out</button>
+        <div className="topbar-left">Signed in as <strong>{session}</strong></div>
+        <button className="btn" onClick={handleLogout}>Log Out</button>
       </div>
-      <div className="page">
+
       <div className="header">
         <div>
-          <h1 className="h1">Ozark Comfort Heating &amp; Cooling</h1>
-          <div className="subtitle">Operations Dashboard</div>
+          <p className="brand-eyebrow">HVAC &middot; Mid-Missouri</p>
+          <h1 className="brand-name">Ozark Comfort Dispatch</h1>
+          <div className="brand-sub">Operations Dashboard</div>
         </div>
-        <div className="stat-bar">
+        <div className="stat-strip">
           <div className="stat">
             <div className="stat-value">{customerCount ?? '—'}</div>
             <div className="stat-label">Active Customers</div>
@@ -260,48 +669,164 @@ function App() {
         </div>
       </div>
 
+      <div className="preview-note">
+        <span className="preview-dot"></span>
+        <span><strong>What's real here:</strong> the schedule, quotes, customer count, and referral-source mix all come straight from Ozark Comfort's real database. The Company Inbox and Reviews below are an illustrative sample, standing in for real email/SMS/review connections. Every AI answer &mdash; chat, scheduling suggestions, review drafts, the weekly digest &mdash; is a real Claude response, not canned text.</span>
+      </div>
+
       <div className="columns">
         <div>
-          <h2 className="section-title">Schedule by Technician</h2>
+          <div className="section-head">
+            <h2 className="section-title">Schedule by Technician</h2>
+            <span className="section-count">{scheduled.length} jobs</span>
+          </div>
           {dateKeys.length === 0 && <div className="empty">Nothing scheduled right now.</div>}
           {dateKeys.map((date) => (
             <div className="date-group" key={date}>
               <div className="date-label">{formatDateLabel(date)}</div>
-              {groupByTechnician(byDate[date]).map(([tech, jobs]) => (
-                <div className="tech-group" key={tech}>
-                  <div className="tech-name">{tech}</div>
-                  {jobs.map((job) => (
-                    <div className="job-row" key={job.id}>
-                      <div className="job-main">
-                        <span className="job-type">{job.job_type}</span>
-                        <span className="customer-name">{job.customers ? job.customers.name : ''}</span>
-                      </div>
-                      {job.notes && <div className="job-notes">{job.notes}</div>}
+              {groupByTechnician(byDate[date]).map(([tech, jobs]) => {
+                const meta = techMeta(tech);
+                return (
+                  <div className="tech-block" key={tech}>
+                    <div className="tech-bar">
+                      <span className="tech-initial" style={{ color: meta.fg, background: meta.bg }}>{meta.initial}</span>
+                      <span className="tech-name">{tech}</span>
                     </div>
-                  ))}
-                </div>
-              ))}
+                    {jobs.map((job) => (
+                      <div className="job-row" key={job.id}>
+                        <div className="job-main">
+                          <span className="job-type">{job.job_type}</span>
+                          <span className="job-customer">{job.customers ? job.customers.name : ''}</span>
+                          {job.notes && <span className="job-note">{job.notes}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           ))}
+
+          <div className="section-head" style={{ marginTop: 28 }}>
+            <h2 className="section-title">Company Inbox</h2>
+            <span className="section-count">illustrative sample</span>
+          </div>
+          <div className="inbox-list">
+            {COMPANY_INBOX.map((m, i) => (
+              <div className="inbox-item" data-unread={m.unread} key={i}>
+                <span className="inbox-dot"></span>
+                <div className="inbox-body">
+                  <div className="inbox-top">
+                    <span className="inbox-sender">{m.sender}</span>
+                    {m.flag && <span className="inbox-flagtag">{m.flag}</span>}
+                  </div>
+                  <div className="inbox-subject">{m.subject}</div>
+                  <div className="inbox-snippet">{m.snippet}</div>
+                  {m.needsScheduling && <SchedulingSuggestion item={m} techLoadText={techLoadText} />}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>
-          <h2 className="section-title">Open Quotes — Needs Follow-Up</h2>
+          <div className="section-head">
+            <h2 className="section-title">Open Quotes</h2>
+            <span className="section-count">{quotes.length} open</span>
+          </div>
           {quotes.length === 0 && <div className="empty">No open quotes.</div>}
           {quotes.map((q) => (
-            <div className="quote-row" key={q.id}>
-              <div className="job-main">
-                <span className="customer-name">{q.customers ? q.customers.name : ''}</span>
+            <div className="quote-card" key={q.id}>
+              <div className="quote-top">
+                <span className="quote-customer">{q.customers ? q.customers.name : ''}</span>
                 <span className="quote-age">{daysAgoLabel(q.job_date)}</span>
               </div>
-              <div className="job-type">{q.job_type}</div>
-              {q.notes && <div className="job-notes">{q.notes}</div>}
+              <div className="quote-type">{q.job_type}</div>
+              {q.notes && <div className="job-note">{q.notes}</div>}
+            </div>
+          ))}
+
+          <div className="section-head" style={{ marginTop: 28 }}>
+            <h2 className="section-title">Reviews</h2>
+            <span className="section-count">illustrative sample</span>
+          </div>
+          {REVIEWS.map((r, i) => (
+            <div className="review-card" key={i}>
+              <div className="review-top">
+                <span className="review-author">{r.author} <span className="review-stars" data-rating={r.rating}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span></span>
+                <span className="review-source">{r.source}</span>
+              </div>
+              <div className="review-text">&ldquo;{r.text}&rdquo;</div>
+              <ReviewResponseDraft review={r} />
             </div>
           ))}
         </div>
       </div>
+
+      {session === 'admin' && (
+        <div className="financials-section">
+          <div className="section-head">
+            <h2 className="section-title">Owner Overview</h2>
+            <span className="section-count">admin only</span>
+          </div>
+          <div className="mini-stat-row">
+            <div className="mini-stat">
+              <div className="mini-stat-value">{completedCount ?? '—'}</div>
+              <div className="mini-stat-label">Completed Jobs</div>
+            </div>
+            <div className="mini-stat">
+              <div className="mini-stat-value">{scheduled.length}</div>
+              <div className="mini-stat-label">Scheduled Jobs</div>
+            </div>
+            <div className="mini-stat">
+              <div className="mini-stat-value">{quotes.length}</div>
+              <div className="mini-stat-label">Open Quotes</div>
+            </div>
+          </div>
+
+          <div className="section-head" style={{ marginTop: 8 }}>
+            <h3 className="section-title" style={{ fontSize: 15 }}>Where Customers Come From</h3>
+          </div>
+          {referralCounts.length === 0 && <div className="empty">No referral data yet.</div>}
+          {referralCounts.length > 0 && (() => {
+            const max = Math.max(...referralCounts.map((r) => r.count));
+            return referralCounts.map((r) => (
+              <div className="attrib-row" key={r.label}>
+                <span className="attrib-label">{r.label}</span>
+                <span className="attrib-bar-track"><span className="attrib-bar-fill" style={{ width: `${Math.round((r.count / max) * 100)}%` }}></span></span>
+                <span className="attrib-count">{r.count}</span>
+              </div>
+            ));
+          })()}
+
+          <div className="section-head" style={{ marginTop: 20 }}>
+            <h3 className="section-title" style={{ fontSize: 15 }}>Weekly Owner Digest</h3>
+          </div>
+          <DigestGenerator contextText={buildContext()} />
+        </div>
+      )}
+
+      <ChatPanel contextFn={buildContext} questions={quickQuestions} />
+
+      <div className="section-head" style={{ marginTop: 32 }}>
+        <h2 className="section-title">More Ways The Agent Can Help</h2>
+        <span className="section-count">roadmap</span>
       </div>
-    </>
+      <div className="roadmap-grid">
+        {ROADMAP_ITEMS.map((item, i) => (
+          <div className="roadmap-card" key={i}>
+            <div className="roadmap-icon">{item.icon}</div>
+            <div className="roadmap-title">{item.title}</div>
+            <div className="roadmap-desc">{item.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <footer>
+        Ozark Comfort Heating &amp; Cooling is a fictional practice company built for Second Shift &mdash; no real customer data.
+        <BrandMark />
+      </footer>
+    </div>
   );
 }
 
@@ -312,7 +837,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   // The app source above is loaded as type="text/plain" so Babel's own
   // automatic script scanner never touches it. On some hosts that scanner
   // fires on its own AND our own trigger fires too, which transforms and
-  // runs the app code twice -- the second run throws ("Identifier 'supabase'
+  // runs the app code twice -- the second run throws ("Identifier 'X'
   // has already been declared") and the page ends up blank. Reading the
   // source ourselves and running Babel.transform() + eval() exactly once
   // avoids that double-execution entirely.
