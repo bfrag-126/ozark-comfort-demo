@@ -54,7 +54,7 @@
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel" data-presets="react">
+<script type="text/plain" id="app-source">
 const { useState, useEffect } = React;
 
 const SUPABASE_URL = 'https://stcedpfozkvanmiwkdlb.supabase.co';
@@ -224,11 +224,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
 </script>
 <script>
-  // Babel-standalone's automatic DOMContentLoaded-based script transform
-  // doesn't reliably fire once this page is served over a real host (it
-  // only ran when manually triggered from devtools during testing) -- so
-  // trigger it explicitly instead of relying on its auto-run behavior.
-  Babel.transformScriptTags();
+  // The app source above is loaded as type="text/plain" so Babel's own
+  // automatic script scanner never touches it. On some hosts that scanner
+  // fires on its own AND our own trigger fires too, which transforms and
+  // runs the app code twice -- the second run throws ("Identifier 'supabase'
+  // has already been declared") and the page ends up blank. Reading the
+  // source ourselves and running Babel.transform() + eval() exactly once
+  // avoids that double-execution entirely.
+  var appSource = document.getElementById('app-source').textContent;
+  var compiled = Babel.transform(appSource, { presets: ['react'] }).code;
+  (0, eval)(compiled);
 </script>
 </body>
 </html>
