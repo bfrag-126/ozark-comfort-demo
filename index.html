@@ -50,6 +50,22 @@
   .quote-row { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
   .quote-age { font-size: 12px; font-weight:600; color: var(--orange); }
   .empty { color: var(--muted); font-size: 14px; font-style: italic; }
+
+  .login-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .login-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 32px 28px; box-shadow: 0 4px 18px rgba(31,41,55,0.08); box-sizing: border-box; }
+  .login-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); text-align: center; margin: 0 0 6px; }
+  .login-title { font-size: 22px; font-weight: 700; color: var(--navy); text-align: center; margin: 0 0 4px; }
+  .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 22px; }
+  .login-field { margin-bottom: 16px; }
+  .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+  .login-field input { width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px; font-family: inherit; box-sizing: border-box; }
+  .login-field input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .login-error { font-size: 13px; color: #b3261e; background: #fdecea; border: 1px solid #f4c7c3; border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
+  .login-btn { width: 100%; padding: 11px; border-radius: 6px; border: none; background: var(--blue); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .login-btn:hover { background: var(--navy); }
+  .topbar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; max-width: 1100px; margin: 0 auto; padding: 16px 24px 0; font-size: 13px; color: var(--muted); }
+  .logout-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 12.5px; color: var(--text); cursor: pointer; font-family: inherit; }
+  .logout-btn:hover { border-color: var(--blue); color: var(--blue); }
 </style>
 </head>
 <body>
@@ -95,7 +111,55 @@ function groupByTechnician(jobs) {
   return Object.entries(map);
 }
 
+// Demo-only credential check, done client-side since this is a static
+// site with no backend yet. Real per-role security (Supabase Auth + RLS
+// enforced at the database level) is the planned next step before any
+// real client's data goes through a page like this one.
+const ACCOUNTS = { rep: 'rep', office: 'office', admin: 'admin' };
+
+function Login({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const key = username.trim().toLowerCase();
+    if (ACCOUNTS[key] && ACCOUNTS[key] === password) {
+      setError('');
+      onLogin(key);
+    } else {
+      setError('Incorrect username or password.');
+    }
+  }
+
+  return (
+    <div className="login-shell">
+      <div className="login-card">
+        <p className="login-eyebrow">HVAC &middot; Mid-Missouri</p>
+        <h1 className="login-title">Ozark Comfort</h1>
+        <p className="login-sub">Sign in to the operations dashboard</p>
+        {error && <div className="login-error">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="login-field">
+            <label htmlFor="login-username">Username</label>
+            <input id="login-username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus />
+          </div>
+          <div className="login-field">
+            <label htmlFor="login-password">Password</label>
+            <input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          </div>
+          <button type="submit" className="login-btn">Sign In</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function App() {
+  const [session, setSession] = useState(() => {
+    try { return sessionStorage.getItem('ozark_role') || null; } catch (e) { return null; }
+  });
   const [scheduled, setScheduled] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [customerCount, setCustomerCount] = useState(null);
@@ -103,6 +167,7 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!session) return;
     async function load() {
       try {
         const schedReq = supabase
@@ -137,7 +202,21 @@ function App() {
       }
     }
     load();
-  }, []);
+  }, [session]);
+
+  function handleLogin(role) {
+    setSession(role);
+    try { sessionStorage.setItem('ozark_role', role); } catch (e) {}
+  }
+
+  function handleLogout() {
+    setSession(null);
+    try { sessionStorage.removeItem('ozark_role'); } catch (e) {}
+  }
+
+  if (!session) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   if (loading) {
     return <div className="center">Loading Ozark Comfort dashboard…</div>;
@@ -154,7 +233,12 @@ function App() {
   const dateKeys = Object.keys(byDate).sort();
 
   return (
-    <div className="page">
+    <>
+      <div className="topbar">
+        Signed in as <strong style={{ color: 'var(--navy)' }}>{session}</strong>
+        <button className="logout-btn" onClick={handleLogout}>Log Out</button>
+      </div>
+      <div className="page">
       <div className="header">
         <div>
           <h1 className="h1">Ozark Comfort Heating &amp; Cooling</h1>
@@ -216,7 +300,8 @@ function App() {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
